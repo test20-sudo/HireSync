@@ -5,6 +5,7 @@ import google.generativeai as genai
 import random
 from serpapi import GoogleSearch
 import os
+from io import BytesIO
 
 app = Flask(__name__)
 
@@ -136,8 +137,6 @@ uploaded_file_path = None
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    global uploaded_file_path
-    
     if request.method == 'POST':
         if 'resume' not in request.files:
             return "No file part"
@@ -145,15 +144,14 @@ def index():
         if file.filename == '':
             return "No selected file"
         if file:
-            # Save file in root directory
-            uploaded_file_path = "uploaded_resume.pdf"
-            file.save(uploaded_file_path)
-            paragraph = extract_text_from_pdf(uploaded_file_path)
+            # Store the file in memory using BytesIO
+            uploaded_file = BytesIO(file.read())
+            paragraph = extract_text_from_pdf(uploaded_file)
             summary = summarize_resume(paragraph)
-            terms = extract_job_terms(paragraph)  # Changed from summary to paragraph for better term extraction
+            terms = extract_job_terms(paragraph)
             return render_template('index.html', summary=summary, terms=terms)
     return render_template('index.html')
-
+    
 @app.route('/jobs', methods=['POST'])
 def jobs():
     global uploaded_file_path
