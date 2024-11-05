@@ -9,7 +9,7 @@ from io import BytesIO
 import tempfile
 
 app = Flask(__name__)
-
+SERPAPI_API_KEY = os.getenv('SERPAPI_API_KEY')
 genai.configure(api_key='AIzaSyAYaBIKu3m-LcHGj-11tBJpmo6yMKU-NB4')
 model = genai.GenerativeModel('gemini-1.5-pro')
 
@@ -160,7 +160,7 @@ def jobs():
     global uploaded_file_path
     
     location = request.form['location']
-    api_key = request.form['api_key']
+    # api_key = request.form['api_key']  # Remove this line
     search_level = request.form['search_level']
     
     # Extract terms from the uploaded resume again if needed
@@ -170,7 +170,7 @@ def jobs():
     else:
         terms = request.form.getlist('terms[]')
     
-    job_listings, total_jobs_found = search_jobs(terms, location, api_key, search_level)
+    job_listings, total_jobs_found = search_jobs(terms, location, SERPAPI_API_KEY, search_level)
     
     return jsonify({
         'job_listings': job_listings, 
