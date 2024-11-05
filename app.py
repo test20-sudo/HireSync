@@ -5,11 +5,10 @@ import google.generativeai as genai
 import random
 from serpapi import GoogleSearch
 import os
-from io import BytesIO
 import tempfile
 
 app = Flask(__name__)
-SERPAPI_API_KEY = os.getenv('SERPAPI_API_KEY')
+
 genai.configure(api_key='AIzaSyAYaBIKu3m-LcHGj-11tBJpmo6yMKU-NB4')
 model = genai.GenerativeModel('gemini-1.5-pro')
 
@@ -138,6 +137,8 @@ uploaded_file_path = None
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    global uploaded_file_path
+    
     if request.method == 'POST':
         if 'resume' not in request.files:
             return "No file part"
@@ -145,22 +146,21 @@ def index():
         if file.filename == '':
             return "No selected file"
         if file:
-            # Save the file to a temporary directory
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
-                file.save(temp_file.name)
-                uploaded_file_path = temp_file.name
-                paragraph = extract_text_from_pdf(uploaded_file_path)
-                summary = summarize_resume(paragraph)
-                terms = extract_job_terms(paragraph)
-                return render_template('index.html', summary=summary, terms=terms)
+            # Save file in root directory
+            uploaded_file_path = "uploaded_resume.pdf"
+            file.save(uploaded_file_path)
+            paragraph = extract_text_from_pdf(uploaded_file_path)
+            summary = summarize_resume(paragraph)
+            terms = extract_job_terms(paragraph)  # Changed from summary to paragraph for better term extraction
+            return render_template('index.html', summary=summary, terms=terms)
     return render_template('index.html')
-    
+
 @app.route('/jobs', methods=['POST'])
 def jobs():
     global uploaded_file_path
     
     location = request.form['location']
-    # api_key = request.form['api_key']  # Remove this line
+    api_key = request.form['api_key']
     search_level = request.form['search_level']
     
     # Extract terms from the uploaded resume again if needed
@@ -170,7 +170,7 @@ def jobs():
     else:
         terms = request.form.getlist('terms[]')
     
-    job_listings, total_jobs_found = search_jobs(terms, location, SERPAPI_API_KEY, search_level)
+    job_listings, total_jobs_found = search_jobs(terms, location, api_key, search_level)
     
     return jsonify({
         'job_listings': job_listings, 
@@ -181,3 +181,4 @@ def jobs():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
