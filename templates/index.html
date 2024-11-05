@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Summary and Job Listings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .upload-section {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .upload-section label {
+            display: block;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin: 10px auto;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .summary-text {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 16px;
+            line-height: 1.6;
+            text-align: left;
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .job-search-section {
+            margin-top: 20px;
+        }
+
+        .job-search-section label {
+            display: block;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .job-search-section input[type="text"] {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .job-listings {
+            margin-top: 20px;
+        }
+
+        .job-listings h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .job-listing {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            background-color: #fff;
+        }
+
+        .job-listing h3 {
+            margin: 0 0 10px;
+            color: #4CAF50;
+        }
+
+        .job-listing p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .job-listing a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+
+        .job-listing a:hover {
+            text-decoration: underline;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            display: none;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-overlay .spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Resume Summary and Job Listings</h1>
+        <div class="upload-section">
+            <form method="POST" enctype="multipart/form-data">
+                <label for="resume">Upload your resume (PDF only):</label>
+                <input type="file" name="resume" id="resume" accept="application/pdf" required>
+                <button type="submit">Upload and Summarize</button>
+            </form>
+        </div>
+
+        {% if summary %}
+        <div class="summary-text">
+            <h2>Resume Summary</h2>
+            <p>{{ summary }}</p>
+        </div>
+        {% endif %}
+
+        {% if terms %}
+        <div class="job-search-section">
+            <h2>Job Search</h2>
+            <form id="job-search-form">
+                <label for="location">Preferred Job Location:</label>
+                <input type="text" id="location" name="location" placeholder="Enter location" required>
+
+                <label for="api_key">API Key:</label>
+                <input type="text" id="api_key" name="api_key" placeholder="Enter API key" required>
+
+                <label for="search_level">Search Level:</label>
+                <select id="search_level" name="search_level">
+                    <option value="basic">Basic</option>
+                    <option value="medium">Medium</option>
+                    <option value="comprehensive">Comprehensive</option>
+                </select>
+
+                <button type="submit">Search Jobs</button>
+            </form>
+        </div>
+        {% endif %}
+
+        <div class="job-listings" id="job-listings">
+            <!-- Job listings will be dynamically added here -->
+        </div>
+
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById('job-search-form');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const jobListingsContainer = document.getElementById('job-listings');
+
+            function showLoadingOverlay() {
+                loadingOverlay.classList.add('active');
+            }
+
+            function hideLoadingOverlay() {
+                loadingOverlay.classList.remove('active');
+            }
+
+            function displayJobListings(jobListings, totalJobsFound, searchLevel) {
+                jobListingsContainer.innerHTML = `
+                    <h2>Job Listings (${totalJobsFound} found - ${searchLevel} search)</h2>
+                `;
+                if (jobListings.length === 0) {
+                    jobListingsContainer.innerHTML += `<p>No job listings found.</p>`;
+                } else {
+                    jobListings.forEach(job => {
+                        jobListingsContainer.innerHTML += `
+                            <div class="job-listing">
+                                <h3>${job.title}</h3>
+                                <p>Company: ${job.company_name}</p>
+                                <p>Location: ${job.location}</p>
+                                
+                                <a href="${job.link}" target="_blank">Apply Here</a>
+                            </div>
+                        `;
+                    });
+                }
+            }
+
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                showLoadingOverlay();
+
+                const formData = new FormData(form);
+                const location = formData.get('location');
+                const apiKey = formData.get('api_key');
+                const searchLevel = formData.get('search_level');
+
+                formData.append('location', location);
+                formData.append('api_key', apiKey);
+                formData.append('search_level', searchLevel);
+                
+                fetch('/jobs', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    hideLoadingOverlay();
+                    displayJobListings(data.job_listings, data.total_jobs_found, data.search_level);
+                })
+                .catch(error => {
+                    hideLoadingOverlay();
+                    alert('Error fetching job listings: ' + error.message);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
