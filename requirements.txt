@@ -1,0 +1,5 @@
+PyPDF2
+google-generativeai
+google-search-results
+serpapi
+gunicorn
