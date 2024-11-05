@@ -113,7 +113,7 @@ def search_jobs(terms, location, api_key, search_level):
                 "engine": "google_jobs",
                 "q": search_query,
                 "hl": "en",
-                "api_key": e35fd699923f45b70e576dab0c5fe7db401dfe4af756e7a8604dceba7816234b
+                "api_key": api_key
             }
             search = GoogleSearch(params)
             results = search.get_dict()
@@ -160,7 +160,7 @@ def jobs():
     global uploaded_file_path
     
     location = request.form['location']
-    #api_key = request.form['api_key']
+    api_key = request.form['api_key']
     search_level = request.form['search_level']
     
     # Extract terms from the uploaded resume again if needed
