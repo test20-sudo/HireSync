@@ -4,3 +4,5 @@ google-generativeai
 google-search-results
 serpapi
 gunicorn
+temp
+io
