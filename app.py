@@ -6,6 +6,7 @@ import random
 from serpapi import GoogleSearch
 import os
 from io import BytesIO
+import tempfile
 
 app = Flask(__name__)
 
@@ -144,12 +145,14 @@ def index():
         if file.filename == '':
             return "No selected file"
         if file:
-            # Store the file in memory using BytesIO
-            uploaded_file = BytesIO(file.read())
-            paragraph = extract_text_from_pdf(uploaded_file)
-            summary = summarize_resume(paragraph)
-            terms = extract_job_terms(paragraph)
-            return render_template('index.html', summary=summary, terms=terms)
+            # Save the file to a temporary directory
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+                file.save(temp_file.name)
+                uploaded_file_path = temp_file.name
+                paragraph = extract_text_from_pdf(uploaded_file_path)
+                summary = summarize_resume(paragraph)
+                terms = extract_job_terms(paragraph)
+                return render_template('index.html', summary=summary, terms=terms)
     return render_template('index.html')
     
 @app.route('/jobs', methods=['POST'])
