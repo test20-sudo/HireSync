@@ -8,7 +8,7 @@ import os
 
 app = Flask(__name__)
 
-genai.configure(api_key='AIzaSyAYaBIKu3m-LcHGj-11tBJpmo6yMKU-NB4')
+genai.configure(api_key=os.environ["API_KEY"])
 model = genai.GenerativeModel('gemini-1.5-pro')
 
 def extract_text_from_pdf(pdf_path):
