@@ -26,7 +26,7 @@ def extract_text_from_pdf(pdf_path):
 
 def summarize_resume(keywords_list):
     model = genai.GenerativeModel("gemini-1.5-flash")
-    prompt = f"Give a small 3-4 line summary on skill levels and expertise based on the resume. Then highlight strong and weak points in 3 points each. Use first person verbs. Lastly ask for preferred job location.\n{keywords_list}"
+    prompt = f"Summarize the resume. Also addd suitable job roles with reasons. Keep it short and crisp.\n{keywords_list}"
     try:
         response = model.generate_content(prompt)
         summary = re.sub(r"[*#_]", "", response.text.strip())
@@ -69,7 +69,7 @@ Extract all the coding languages and technical domain and its related terms in t
     
     If any of the terms related to this are present in the list, return those and also specify from which domain. Display only the terms for example: 
     C, C++, Python, Machine learning. Keep it in one line. Also include coding popular coding platforms like CodeChef, Codeforces, LeetCode etc.
-    Keep the terms simple and separate by commas.
+    Keep the terms simple and separate by commas. If found any job description directly in the paragraph, add that as well.
 """
     try:
         response = model.generate_content(prompt)
